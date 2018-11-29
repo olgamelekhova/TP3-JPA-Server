@@ -1,5 +1,6 @@
 package com.efrei.jpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
@@ -15,6 +16,7 @@ public class Person {
     @NonNull
     private String name;
 
+    @JsonIgnore
     @OneToMany(targetEntity = Rent.class, mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Rent> rents = new ArrayList<>();
 
