@@ -1,7 +1,10 @@
 package com.efrei.jpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import javax.persistence.Entity;
 
+@JsonTypeName("car")
 @Entity
 public class Car extends Vehicle {
     private int numberOfSeats;

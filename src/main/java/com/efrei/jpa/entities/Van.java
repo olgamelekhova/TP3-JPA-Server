@@ -1,8 +1,11 @@
 package com.efrei.jpa.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import javax.persistence.Entity;
 
+@JsonTypeName("van")
 @Entity
 public class Van extends Vehicle {
     private double maxWeight;

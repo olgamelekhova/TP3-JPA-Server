@@ -1,11 +1,19 @@
 package com.efrei.jpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Car.class, name = "car"),
+        @JsonSubTypes.Type(value = Van.class, name = "van")
+})
 @Entity
 public abstract class Vehicle {
     @Id
@@ -16,6 +24,7 @@ public abstract class Vehicle {
     @Column(unique = true)
     private String plateNumber;
 
+    @JsonIgnore
     @OneToMany(targetEntity = Rent.class,
             mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Rent> rents = new ArrayList<>();
