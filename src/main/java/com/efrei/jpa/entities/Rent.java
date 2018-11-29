@@ -1,13 +1,11 @@
 package com.efrei.jpa.entities;
 
-import com.sun.istack.internal.NotNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 public class Rent {
@@ -24,20 +22,21 @@ public class Rent {
     private Date endRent;
 
     @ManyToOne
-    @NotNull
-    private Person person;
+    @NonNull
+    private Vehicle vehicle;
 
-    @OneToMany(targetEntity = Vehicle.class,
-            mappedBy = "rent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Vehicle> vehicles = new ArrayList<>();
+    @ManyToOne
+    @NonNull
+    private Person person;
 
     protected Rent() {
     }
 
-    public Rent(Date beginRent, Date endRent, Person person) {
+    public Rent(Date beginRent, Date endRent, Person person, Vehicle vehicle) {
         this.beginRent = beginRent;
         this.endRent = endRent;
         this.person = person;
+        this.vehicle = vehicle;
     }
 
     public Long getId() {
@@ -68,12 +67,12 @@ public class Rent {
         this.person = person;
     }
 
-    public List<Vehicle> getVehicles() {
-        return vehicles;
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public void setVehicles(List<Vehicle> vehicles) {
-        this.vehicles = vehicles;
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     @Override

@@ -15,12 +15,6 @@ public class Car extends Vehicle {
         this.numberOfSeats = numberOfSeats;
     }
 
-    public Car(String plateNumber, Rent rent, int numberOfSeats) {
-        super(plateNumber, rent);
-
-        this.numberOfSeats = numberOfSeats;
-    }
-
     public int getNumberOfSeats() {
         return numberOfSeats;
     }

@@ -16,12 +16,6 @@ public class Van extends Vehicle {
         this.maxWeight = maxWeight;
     }
 
-    public Van(String plateNumber, Rent rent, double maxWeight) {
-        super(plateNumber, rent);
-
-        this.maxWeight = maxWeight;
-    }
-
     public double getMaxWeight() {
         return maxWeight;
     }

@@ -1,8 +1,10 @@
 package com.efrei.jpa.entities;
 
-import com.sun.istack.internal.NotNull;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public abstract class Vehicle {
@@ -10,23 +12,19 @@ public abstract class Vehicle {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
+    @NonNull
     @Column(unique = true)
     private String plateNumber;
 
-    @ManyToOne
-    private Rent rent;
+    @OneToMany(targetEntity = Rent.class,
+            mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Rent> rents = new ArrayList<>();
 
     Vehicle() {
     }
 
     Vehicle(String plateNumber) {
         this.plateNumber = plateNumber;
-    }
-
-    Vehicle(String plateNumber, Rent rent) {
-        this.plateNumber = plateNumber;
-        this.rent = rent;
     }
 
     public Long getId() {
@@ -41,12 +39,12 @@ public abstract class Vehicle {
         this.plateNumber = plateNumber;
     }
 
-    public Rent getRent() {
-        return rent;
+    public List<Rent> getRents() {
+        return rents;
     }
 
-    public void setRent(Rent rent) {
-        this.rent = rent;
+    public void setRents(List<Rent> rents) {
+        this.rents = rents;
     }
 
     @Override
@@ -57,7 +55,6 @@ public abstract class Vehicle {
                 .append("(plateNumber: ")
                 .append(plateNumber)
                 .append(", rent: ")
-                .append(rent)
                 .append(")").toString();
     }
 }
