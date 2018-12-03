@@ -21,7 +21,7 @@ public class Rent {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endRent;
 
-    private boolean annullled;
+    private boolean active;
 
     @ManyToOne
     @NonNull
@@ -39,7 +39,7 @@ public class Rent {
         this.endRent = endRent;
         this.person = person;
         this.vehicle = vehicle;
-        this.annullled = false;
+        this.active = true;
     }
 
     public Long getId() {
@@ -78,12 +78,12 @@ public class Rent {
         this.vehicle = vehicle;
     }
 
-    public boolean isAnnullled() {
-        return annullled;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setAnnullled(boolean annulled) {
-        this.annullled = annulled;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
@@ -94,8 +94,8 @@ public class Rent {
                 .append(beginRent)
                 .append(", endRent: ")
                 .append(endRent)
-                .append(", annulled: ")
-                .append(annullled)
+                .append(", active: ")
+                .append(active)
                 .append(", person: ")
                 .append(person).toString();
     }

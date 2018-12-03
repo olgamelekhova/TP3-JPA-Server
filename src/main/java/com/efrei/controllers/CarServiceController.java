@@ -32,7 +32,30 @@ public class CarServiceController {
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/cars", method = RequestMethod.GET)
+    @RequestMapping(value = "/rents", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Iterable<Rent> listOfRents() {
+        return rentRepository.findAll();
+    }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(value = "/rents/{plateNumber}", method = RequestMethod.GET)
+    public ResponseEntity<List<Rent>> findRentsByPlateNumber(@PathVariable("plateNumber") String plateNumber) {
+        return Optional.ofNullable(vehicleRepository.findByPlateNumber(plateNumber))
+                .map(vehicle -> ResponseEntity.ok(vehicle.getRents()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(value = "/vehicles", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    public void addVehicle(@RequestBody Vehicle vehicle) {
+        vehicleRepository.save(vehicle);
+    }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(value = "/vehicles", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<Vehicle> listOfCars() {
@@ -43,22 +66,7 @@ public class CarServiceController {
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/rents", method = RequestMethod.GET)
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public Iterable<Rent> listOfRents() {
-        return rentRepository.findAll();
-    }
-
-    @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/cars", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.OK)
-    public void addVehicle(@RequestBody Vehicle vehicle) {
-        vehicleRepository.save(vehicle);
-    }
-
-    @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/cars/{plateNumber}", method = RequestMethod.GET)
+    @RequestMapping(value = "/vehicles/{plateNumber}", method = RequestMethod.GET)
     public ResponseEntity<Vehicle> findVehicleByPlateNumber(@PathVariable("plateNumber") String plateNumber) {
         return Optional.ofNullable(vehicleRepository.findByPlateNumber(plateNumber))
                 .map(ResponseEntity::ok)
@@ -66,13 +74,13 @@ public class CarServiceController {
     }
 
     @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping(value = "/cars/{plateNumber}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/vehicles/{plateNumber}", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public ResponseEntity<Rent> rentVehicle(@PathVariable(name = "plateNumber") String plateNumber,
                                             @RequestParam(name = "person") String personName,
-                                            @RequestParam(value = "beginDate") @DateTimeFormat(pattern = "ddMMyyyy") Date beginDate,
-                                            @RequestParam(value = "endDate") @DateTimeFormat(pattern = "ddMMyyyy") Date endDate,
+                                            @RequestParam(value = "beginDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date beginDate,
+                                            @RequestParam(value = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date endDate,
                                             @RequestParam(name = "rent") boolean toRent) {
         Vehicle vehicle = vehicleRepository.findByPlateNumber(plateNumber);
 
@@ -80,39 +88,39 @@ public class CarServiceController {
             return ResponseEntity.notFound().build();
         }
 
-        if (toRent && vehicle.getRents().size() > 0) {
-            return ResponseEntity.noContent().build();
-        }
+        Rent rent = vehicle.getRents()
+                .stream()
+                .filter(r -> r.getBeginRent().compareTo(beginDate) == 0
+                        && r.getEndRent().compareTo(endDate) == 0
+                        && r.getPerson().getName().equalsIgnoreCase(personName))
+                .findAny()
+                .orElse(null);
 
-        if (toRent && vehicle.getRents().size() == 0) {
-            Person person = new Person(personName);
-            Rent rent = new Rent(beginDate, endDate, person, vehicle);
+        if (rent == null) {
+            if (toRent &&
+                    vehicle.getRents()
+                            .stream()
+                            .noneMatch(r -> r.getBeginRent().getTime() <= endDate.getTime()
+                                    && beginDate.getTime() <= r.getEndRent().getTime())) {
 
-            personRepository.save(person);
-            rentRepository.save(rent);
+                Person person = new Person(personName);
+                Rent newRent = new Rent(beginDate, endDate, person, vehicle);
 
-            return ResponseEntity.ok(rent);
-        }
+                personRepository.save(person);
+                rentRepository.save(newRent);
 
-        if (!toRent && vehicle.getRents().size() > 0) {
-            Rent rent = vehicle.getRents()
-                    .stream()
-                    .filter(r -> r.getBeginRent().compareTo(beginDate) == 0
-                            && r.getEndRent().compareTo(endDate) == 0
-                            && r.getPerson().getName().equals(personName))
-                    .findAny()
-                    .orElse(null);
-
-            if (rent == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.ok(newRent);
             }
 
-            rent.setAnnullled(true);
-            rentRepository.save(rent);
+            return ResponseEntity.notFound().build();
+        }
 
+        if ((toRent && !rent.isActive()) || (!toRent && rent.isActive())) {
+            rent.setActive(toRent);
+            rentRepository.save(rent);
             return ResponseEntity.ok(rent);
         }
 
-        return ResponseEntity.badRequest().body(null);
+        return ResponseEntity.badRequest().build();
     }
 }
